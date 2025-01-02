@@ -1,11 +1,6 @@
-#=
-ii = 1
-no_params = size(state_par_match, 2)
-no_columns = no_params + 1 + size(state_geno_match, 2) 
-x_dist_init
-=#
-
-# CalcAveragesFreqs(ii, no_columns, no_params, x_dist_init)
+##############################################
+#		FUNCTION CALC AVG FREQUENCIES        #
+##############################################
 
 function CalcAveragesFreqs(ii, no_columns, no_params, x_dist)
 	# x_dist = x_dist_init
@@ -26,3 +21,13 @@ function CalcAveragesFreqs(ii, no_columns, no_params, x_dist)
 	return means_freqs
 
 end
+
+
+#=
+ii = 1
+no_params = size(state_par_match, 2)
+no_columns = no_params + 1 + size(state_geno_match, 2) 
+x_dist_init
+=#
+
+# CalcAveragesFreqs(ii, no_columns, no_params, x_dist_init)

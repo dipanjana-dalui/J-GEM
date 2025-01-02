@@ -1,4 +1,7 @@
-#using Distributions
+##############################################
+#		  FUNCTION PICK individuals          #
+##############################################
+## This function picks individuals with mean parameter, and std parameter * cv 
 
 function PickIndiv(x, std, N)
 	# this picks N traits with mean x and std deviation stand
@@ -11,6 +14,9 @@ function PickIndiv(x, std, N)
 	return x_out
 end
 
+##############################################
+#					SCRATCH			         #
+##############################################
 #=
 using Distributions
 using Plots

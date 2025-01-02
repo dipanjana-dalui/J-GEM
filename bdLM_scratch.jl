@@ -14,9 +14,10 @@ using StaticArrays
 using BenchmarkTools
 
 # pick an initial resource density
-R0 = 10 #we picked the initial population 
+R0 = [10.0] #we picked the initial population 
+# R0 = SMatrix{1,2}(10, 20) #for 2 species
 typeof(R0) #Float64 
-
+length(R0)
 
 # bd logistic parameters for resource 
 b_max_mu = 4.0
@@ -47,6 +48,7 @@ d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1)
 #a_val = a[1,1] # accessing the element
 #a_val_vec = vec(a)[1] #flattens/vectorizes the array
 
+# calculate constants for first run 
 #K_vec = vec((b_max - d_min)/(b_s + d_s))[1]
 #K = floor(K_vec)
 r_max = b_max-d_min
@@ -56,7 +58,7 @@ K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 # here you have to be careful with the number of states 
 # and the number of parameters. We will have as many rows 
 # number of states, and 1+parameters number of columns.
-# You can define a static array as follows- {2,3} is the size.
+# You can define a static array as follows- {rows,cols} is the size.
 # first arg is rows = number of states 
 # second arg is cols = number of param
 # b = SMatrix{2,3}(1, 2, 3, 4, 5, 6)
@@ -104,9 +106,9 @@ GEM_type = 1
 num_GEM_var = 1 #let's look at an example where b_max is under selection
 num_rep = 5 # number of GEM simulations/version
 
-params .* cv_vect
+#params .* cv_vect
 cv_vect = [0.2, 0, 0, 0]
-h2_vect = [0 h] 
+h2_vect = [0 0.25] 
 
 ##############################################
 ##
@@ -189,7 +191,7 @@ for j = 1:length(GEM_type) #only 1 in this case
             #  pop_slice[:,1] = [Y0] <- Y0 is a vector of starting values
             R = R0 #save a copy inside the loop to update
             
-            x_dist_init = InitiatePop(y0, which_param_quant, state_geno_match, state_par_match,
+            x_dist_init = InitiatePop(R0, which_par_quant, state_geno_match, state_par_match,
             init_comm_mat, params, cv_vect)
 
             # We will sample initial values and frequencies
@@ -197,8 +199,7 @@ for j = 1:length(GEM_type) #only 1 in this case
             for ii = 1:no_species
                   #x_slice = fill(NaN, no_columns-1, num_time_steps, no_species)
                   x_slice[:, 1, ii] = CalcAveragesFreqs(ii, no_columns, no_params, x_dist_init)
-                  x_var_slice[1:no_params,1,ii] = 
-                  var(x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
+                  x_var_slice[1:no_params,1,ii] = var(x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
             end
 
             ## 8
@@ -208,20 +209,32 @@ for j = 1:length(GEM_type) #only 1 in this case
             x_dist_init[:,1]  
             temp = fill(2.0, 8)   
             test_arr = vcat(x_dist_init[:,1], temp)
-            for jj = 1:2
+            for jj = 1:length(A)
             A[jj] = count(==(jj), test_arr)
             end
             A
+            
             x=test_arr2[:,1]
             test_arr2 = hcat(test_arr, fill(3, length(test_arr)))
             count(x->(x==2), test_arr2)
             =#
 
             # setting up init values for the loop
+            #=For convenience, we will keep track of the current abundances 
+            with R(some number of species)
+            This is a flexible option that 
+            you will want to update so that it 
+            is easy to follow with your model functions.
+            =#
+            ####### do I need this? #######
+            R = R0
             for jj = 1:length(R)
                   x = init_comm_mat[:,1] #extract first col
-                  R[jj] = count(x -> (x==jj), init_comm_mat)
+                  typeof(x)
+                  R[jj] = count(.==(jj), x)
+                  #R[jj] = count(x -> (x.==jj), init_comm_mat)
             end
+            #######                #######
 
             x_dist = x_dist_init
             time_step_index = 2
@@ -229,12 +242,15 @@ for j = 1:length(GEM_type) #only 1 in this case
 
             while t < t_max && sum(R)>0
                   # FIND WHO IS NEXT
-                  ## FLAG 1
-                  [params_next,genotypes_next,whosnext] = FindWhosNext(x_dist,no_species,no_columns,no_params,y0,state_parameter _match,state_genotype _match);
-
+                  
+                  FindWhoNext = WhoIsNext(x_dist,no_species,no_columns,no_params,y0,
+                                          state_par_match,state_geno_match)
+                  params_next = FindWhoNext[1]
+                  genotypes_next = FindWhoNext[2]
+                  whosnext = FindWhoNext[3]
                   # R birth
                   b_max = params[1] # max birth
-                  d_max = params[2] # min death
+                  d_min = params[2] # min death
                   b_s = params[3] # density dependence of birth
                   d_s = params[4] 
 
@@ -243,8 +259,27 @@ for j = 1:length(GEM_type) #only 1 in this case
 
                   terms = [birth_R, death_R]
 
-                  [event_index, c_sum, row, col] = PickEvent(terms, no_species) ## FLAG 2
+                  [event_index, c_sum, row, col] = PickEvent(terms, no_species) ## NEEDS FIXING
 
+                  # scratc set up row = 1, col = 3 -- NEEDS FIXING from PickEvent
                   
+                  c_sum = [40 50]
+                  row = 1
+                  col = 1 
+                  # 10
+                  if row == 1 # birth -- NEEDS FIXING from PickEvent
+                        ## whosnext gives you the row id of the individual chosen, but it
+                        ## needs to be in INT form to be used as a row ID.
+                        parent_traits = x_dist[Int(whosnext[col]), 2:no_columns] #whosnext[col] IS WRONG
+                        
+                        new_trait = DrawNewTraits(x_dist,parent_traits,h2_vect,no_params,no_columns,col)
+                        new_trait_row = hcat(col, new_trait)
+                        x_dist = vcat(x_dist, new_trait_row) 
+                  elseif row == 2 # death -- NEEDS FIXING from PickEvent
+                       
+                        
+
+
+
             
             

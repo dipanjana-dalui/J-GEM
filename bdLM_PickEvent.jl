@@ -1,21 +1,33 @@
-R = 10
-terms = [20; 30; 40]
+R = [10]
+no_species = length(R)
+terms = [20; 30]
 length(terms)
 reshape(terms, 1,length(terms))
-no_species = length(R)
+
 
 function PickEvent(terms, no_species)
-
-#=
-# Helper function to convert a linear index to Cartesian (row, col)
-function ind2sub(dims, index)
-		nrows, ncols = dims
-		row = div(index - 1, ncols) + 1
-		col = (index - 1) % ncols + 1
-		return row, col
-end
+	terms = reshape(terms, 1, length(terms)) #reshape(ele_to_reshape, new_row, new_col)
+	c_sum = cumsum(terms, dims = 2)  
+	pie_slices = c_sum ./ c_sum[end] #generated weighted slices b/w 0-1
+	#r_num = rand()
+	r_num = 0.85
 	
+	less_than = r_num .< pie_slices
+	typeof(less_than)
+	
+	event_index = findfirst(less_than)
+	typeof(event_index)
 
+	CS_elements = reshape(1:length(terms), :, no_species)
+    
+	#row, col = ind2sub(size(CS_elements), event_index)
+	CartesianIndex(CS_elements)
+## ASK John
+# we can just assign the row and col from the cartesian coordinates, right?
+	return event_index, c_sum, row, col 
+
+end
+#=
 #function PickEvent(terms, no_species)
 	terms = reshape(terms, 1, length(terms)) #make everything one row
 	c_sum = cumsum(terms, dims = 2)   
@@ -74,3 +86,14 @@ end
 	
 	return #will depend on what we want out of this code
 end
+
+
+#=
+# Helper function to convert a linear index to Cartesian (row, col)
+function ind2sub(dims, index)
+		nrows, ncols = dims
+		row = div(index - 1, ncols) + 1
+		col = (index - 1) % ncols + 1
+		return row, col
+end
+	

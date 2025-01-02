@@ -1,10 +1,35 @@
-## scratch
-#
-using Distributions
-using Random
-using StaticArrays
 
+##############################################
+#			FUNCTION WHO IS NEXT?	         #
+##############################################
+function WhoIsNext(x_dist, no_species, no_columns, no_params, y0,
+	state_par_match, state_geno_match)
 
+	params_next = zeros(no_species, no_params)
+	genotype_next = zeros(no_species, size(state_geno_match, 2))
+	whosnext = fill(NaN,length(R0)) 
+	for zz = 1:no_species #loop through all states that are present in ODE form
+#		zz = 1
+		ind_in_state = findall(x_dist[:,1] .== zz) # this finds the index for the zzth state
+		# this gives the range of index values b/c we are searching for the index all the
+		# individuals with species index zz.
+		which_params = findall(state_par_match[1, :] .!= 0) # finding the indices of the non zero elements
+		which_genotype = 1:size(state_geno_match, 2) #1:ncol of genotypes (NOT just the non zero) -- WHY?
+		#while !isempty(ind_in_state)
+		if !isempty(ind_in_state)
+			which_row = rand(1:length(ind_in_state)) # generate a random interger between 1 and the index
+			whosnext[zz] = ind_in_state[which_row]
+			params_next[zz, which_params] = x_dist[Int(whosnext[zz]), 1 .+ which_params]
+			genotype_next[zz,which_genotype] = x_dist[Int(whosnext[zz]), 2 .+ no_params:no_columns]
+		end
+	end
+	return params_next, genotype_next, whosnext
+end
+
+##############################################
+#					SCRATCH			         #
+##############################################
+#=
 R0 = 10
 y0 = R0 = 10
 state_par_match = SMatrix{1, 4}(1, 1, 1, 1) ## make static array?
@@ -27,35 +52,12 @@ params
 cv_vect = [0.2, 0, 0, 0]
 
 
-x_dist_init = InitiatePop(y0, which_param_quant, state_geno_match, state_par_match,
+x_dist_init = InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 init_comm_mat, params, cv_vect)
 x_dist = x_dist_init
 
-#WhoIsNext(x_dist, no_species, no_columns, no_params, y0, state_par_match, state_geno_match)
+WhoIsNext(x_dist, no_species, no_columns, no_params, y0, state_par_match, state_geno_match)
+# return params_next, genotype_next, whosnext
+([3.9561700291768664 1.0 0.0011999999999999995 0.0010000000000000002], [NaN NaN NaN NaN], [10.0])
 
-##############################################
-#				 FUNCTION
-##############################################
-#function WhoIsNext(x_dist, no_species, no_columns, no_params, y0,
-#	state_par_match, state_geno_match)
-
-	params_next = zeros(no_species, no_params)
-	genotype_next = zeros(no_species, size(state_geno_match, 2))
-	whosnext = fill(NaN,length(R0)) 
-	for zz = 1:no_species #loop through all states that are present in ODE form
-		zz = 1
-		ind_in_state = findall(x_dist[:,1] .== zz) # this finds the index for the zzth state
-		# this gives the range of index values b/c we are searching for the index all the
-		# individuals with species index zz.
-		which_params = findall(state_par_match[1, :] .!= 0) # finding the indices of the non zero elements
-		which_genotype = 1:size(state_geno_match, 2) #1:ncol of genotypes (NOT just the non zero) -- WHY?
-		#while !isempty(ind_in_state)
-		if !isempty(ind_in_state)
-			which_row = rand(1:length(ind_in_state)) # generate a random interger between 1 and the index
-			whosnext[zz] = ind_in_state[which_row]
-			params_next[zz, which_params] = x_dist[Int(whosnext[zz]), 1 .+ which_params]
-			genotype_next[zz,which_genotype] = x_dist[Int(whosnext[zz]), 2 .+ no_params:no_columns]
-		end
-	end
-	return params_next, genotypes_next, whosnext
-end
+=#
