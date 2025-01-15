@@ -107,8 +107,11 @@ num_GEM_var = 1 #let's look at an example where b_max is under selection
 num_rep = 5 # number of GEM simulations/version
 
 #params .* cv_vect
-cv_vect = [0.2, 0, 0, 0]
-h2_vect = [0 0.25] 
+
+cv_vect = SMatrix{no_params,no_species}(0.2, 0, 0, 0)
+size(cv_vect)
+h2_vect = SMatrix{2,no_species}(0, 0.25) 
+size(h2_vect)
 
 ##############################################
 ##
@@ -150,13 +153,19 @@ for j = 1:length(GEM_type) #only 1 in this case
     ## add parallelizing here
     ##
     ##
-    for i = 1:num_rep
-            t = 0
-            # standardize time steps for storing time series
-            stand_time = range( 0, t_max, step = min_time_step_to_store) #define t_max and  
-            # min_time_step in block 1 or 2. 
-            num_time_steps = length(stand_time)
-      ##
+    t = 0
+    # standardize time steps for storing time series
+    stand_time = range( 0, t_max, step = min_time_step_to_store) #define t_max and  
+    # min_time_step in block 1 or 2. 
+    num_time_steps = length(stand_time)
+
+    ## memory preallocation should happen here for the entire simulations
+    pop_stand = zeros(no_species, num_time_steps, num_rep )
+    x_stand = fill(NaN, no_columns-1,num_time_steps,no_species,num_rep) #trait
+    x_var_stand = fill(NaN, no_columns-1,num_time_steps, no_species, num_rep) # trait variance
+
+    
+      for i = 1:num_rep
             # The main thing to remember is some of these will be dynamics
             #   MAIN CHECK HERE: StaticArrays MIGHT NOT BE IDEAL SINCE 
             #   SOME OF THESE STRUCTURES GROW BIGGER (StaticArrays BEST USED FOR 
@@ -198,7 +207,7 @@ for j = 1:length(GEM_type) #only 1 in this case
             
             for ii = 1:no_species
                   #x_slice = fill(NaN, no_columns-1, num_time_steps, no_species)
-                  x_slice[:, 1, ii] = CalcAveragesFreqs(ii, no_columns, no_params, x_dist_init)
+                  x_slice[:, 1, ii] = CalcAverageFreqs(ii, no_columns, no_params, x_dist_init)
                   x_var_slice[1:no_params,1,ii] = var(x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
             end
 
@@ -276,8 +285,68 @@ for j = 1:length(GEM_type) #only 1 in this case
                         new_trait_row = hcat(col, new_trait)
                         x_dist = vcat(x_dist, new_trait_row) 
                   elseif row == 2 # death -- NEEDS FIXING from PickEvent
-                       
+                        # delete the individual by making a new copy of the matrix
+                        # without the row 
+                        x_dist = x_dist[1:size(x_dist, 1) .!= Int(whosnext[col]), :]
+                  end
+                  
+                  ## UPDATE ABUNDANCES 
+                  #test_x_dist = hcat(x_dist, )
+                  for j in 1:no_species
+                        R[1] = sum(x_dist[:,1].== 1)
+                  end
+
+                  #when time is up
+                  if t > time_step
+                        time_step #: display?
                         
+                        pop_slice[1:no_species,time_step_index] .= R # assign current values to sliced standard times
+                       
+                        #= STILL MATLAB
+                        for ii in 1:no_species
+                            x_slice(1:no_columns-1,time_step _index,ii) = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
+                            x_var _slice(1:no_params,time_step _index,ii) = var(x_dist[x_dist[:,1]==ii,2:no_params+1],1);
+                        end
+                        time_step _index = time_step _index + 1; % advance to next standardized time
+                        time_step = stand_times(time_step _index);
+                        =#
+                  end
+
+                  #last thing to do before exiting the loop:
+                  # ADVANCE TIME 
+                  time_advance = exp(-1/c_sum[end])/(c_sum[end])
+                  if isnan(time_advance) == 0
+                        t = t + time_advance
+                  else
+                        break
+                  end
+            end #end of while loop running the core GEM
+
+            #storing the values of this simulatiom replicate
+            # pass the current values to the data structures 
+            # made earilier
+
+            ## DOES THIS NEED TO BE INSIDE OR OUTSIDE OR BOTH?
+            ## MATLAB code does both
+            pop_slice[1:no_species, time_step_index] = R
+            for ii = 1:no_species
+                  x_slice[1:no_columns,end,ii] = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
+                  x_var_slice[1:no_params,end,ii] = var(x_dist[x_dist[:,1].== ii,2:no_params+1],dims=1);
+            end
+
+            ## update ABUNDANCE
+            i =1
+            pop_stand[:, :, i] = pop_slice
+            x_stand[:, :, :, i] = x_slice ## 
+            x_var_stand[:, :, :, i] = x_var_slice ##
+
+      end ## end of for loop for single replicate
+
+      ## CALCULATING STATISTICS FOR ALL SIMULATION
+      ## can also be a separate script 
+
+      
+
 
 
 
