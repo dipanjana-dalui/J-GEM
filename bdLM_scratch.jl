@@ -140,7 +140,7 @@ plot(sol, linewidth=3,
 
 
 ##############################################
-### We have all our predefintions, now we have to stich together
+### We have all our predefintions, now we have to stitch together
 ### the algorithm 
 
 #You will set up your parallelizing here before you start your 
@@ -304,7 +304,7 @@ for j = 1:length(GEM_type) #only 1 in this case
                        
                         #= STILL MATLAB
                         for ii in 1:no_species
-                            x_slice(1:no_columns-1,time_step _index,ii) = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
+                            x_slice(:,time_step _index,ii) = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
                             x_var _slice(1:no_params,time_step _index,ii) = var(x_dist[x_dist[:,1]==ii,2:no_params+1],1);
                         end
                         time_step _index = time_step _index + 1; % advance to next standardized time
@@ -330,8 +330,8 @@ for j = 1:length(GEM_type) #only 1 in this case
             ## MATLAB code does both
             pop_slice[1:no_species, time_step_index] = R
             for ii = 1:no_species
-                  x_slice[1:no_columns,end,ii] = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
-                  x_var_slice[1:no_params,end,ii] = var(x_dist[x_dist[:,1].== ii,2:no_params+1],dims=1);
+                  x_slice[:,time_step_index,ii] = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
+                  x_var_slice[1:no_params,time_step_index,ii] = var(x_dist[x_dist[:,1].== ii,2:no_params+1],dims=1);
             end
 
             ## update ABUNDANCE
