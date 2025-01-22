@@ -21,9 +21,19 @@ end
 using Distributions
 using Plots
 check
-x = 1
+x = 1.0
 std = 0.1
 N = 10
 L=PickIndiv(x, std, N)
 histogram(L)
+
+typeof(N)
+
+
+PickIndiv(1, 0.1,10) 
+PickIndiv(params[1,1], cv_vect[1,1]*params[1,1], Int(traits_to_assign[1,1])) 
+typeof(params[1,1])
+typeof(cv_vect[1,1]*params[1,1])
+typeof(traits_to_assign[1,1])
+
 =#

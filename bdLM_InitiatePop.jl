@@ -3,7 +3,7 @@
 ##############################################
 function InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 	init_comm_mat, params, cv_vect)
-	#y0 = R0
+	y0 = R0
 	end_row = cumsum(y0)
 	starting_row = [1; 1 .+ end_row[1:length(end_row)-1]]
 
@@ -14,8 +14,7 @@ function InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 	gts_to_assign = state_geno_match .* y0
 	num_gts = size(state_geno_match, 2)
 	for qq = 1:length(y0)
-		#qq = 1	
-		init_comm_mat[starting_row[qq]:end_row[qq], 1] .= qq
+		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1] .= qq
 		for zz = 1:length(params)
 			#zz = 1
 			# something fucky here traits_to_assign. The last argument should be the number y0
@@ -24,11 +23,11 @@ function InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 			traits_to_assign = state_par_match .* y0
 			# SINCE BOTH PARAM AND CV_VECT HAVE 4 ROWS AND 1 COL - JULIA IS BY DEFAULT A COL VEC 
 			# WE WILL SWAP THE INDICES TO BE (zz, qq)
-			temp = PickIndiv(params[zz,qq],cv_vect[zz, qq]*params[zz, qq],traits_to_assign[qq,zz]) 
+			temp = PickIndiv(params[zz,qq],cv_vect[zz, qq]*params[zz, qq],Int(traits_to_assign[qq,zz])) 
 			#	talk to John
 
 			if !isempty(temp) #when temp has a non-zero value
-				init_comm_mat[starting_row[qq]:end_row[qq], 1+zz] .= temp
+				init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1+zz] .= temp
 			end
 		end
 
@@ -43,7 +42,7 @@ function InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 				genotype[yy, temp] = 1
 			end			
 		
-		init_comm_mat[starting_row[qq]:end_row[qq], 2 + length(params):1+length(params)+num_gts] = genotype
+		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 2 + length(params):1+length(params)+num_gts] = genotype
 		end
 	end
 	return init_comm_mat

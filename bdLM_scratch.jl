@@ -155,6 +155,9 @@ for j = 1:length(GEM_type) #only 1 in this case
     ##
     t = 0
     # standardize time steps for storing time series
+    # the following two lines of code can be written outside the loop too
+    # but doing it this way means you can have different t_max for different
+    # run types/version. 
     stand_time = range( 0, t_max, step = min_time_step_to_store) #define t_max and  
     # min_time_step in block 1 or 2. 
     num_time_steps = length(stand_time)
@@ -171,8 +174,8 @@ for j = 1:length(GEM_type) #only 1 in this case
             #   SOME OF THESE STRUCTURES GROW BIGGER (StaticArrays BEST USED FOR 
             #   FOR SMALL IMMUTABLE OBJECTS)
 
-            init_comm_mat =  MMatrix{R0, no_columns}(fill(NaN, R0, no_columns))
-            init_comm_mat =  Array{Float64}(fill(NaN, R0, no_columns))
+            init_comm_mat =  MMatrix{R0, no_columns}(fill(NaN, Int(R0), no_columns))
+            init_comm_mat =  Array{Float64}(fill(NaN, Int(R0), no_columns))
             typeof(init_comm_mat) #check that you have the right type
             # here we are creating an initial community matrix
             # the rows should be the total community size. If yoou have
@@ -211,7 +214,7 @@ for j = 1:length(GEM_type) #only 1 in this case
                   x_var_slice[1:no_params,1,ii] = var(x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
             end
 
-            ## 8
+## 8
             
             #=
             A = [1, 6]
@@ -246,7 +249,7 @@ for j = 1:length(GEM_type) #only 1 in this case
             #######                #######
 
             x_dist = x_dist_init
-            time_step_index = 2
+            time_step_index = 2 
             time_step = stand_time[time_step_index]
 
             while t < t_max && sum(R)>0
@@ -341,6 +344,7 @@ for j = 1:length(GEM_type) #only 1 in this case
             x_var_stand[:, :, :, i] = x_var_slice ##
 
       end ## end of for loop for single replicate
+
 
       ## CALCULATING STATISTICS FOR ALL SIMULATION
       ## can also be a separate script 
