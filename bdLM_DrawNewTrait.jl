@@ -8,7 +8,8 @@ function DrawNewTraits(x_dist, parent_traits, h2_vect, no_params, no_columns, co
 	pop_mean = mapslices(mean ∘ skipmissing, x_dist[x_dist[:, 1] .== col, 2:no_params+1], dims=1)
 	# we want the means to be for each parameter
 	#mean(x_dist[x_dist[:,1].==col, 2:no_params+1])
-	pop_stdev = mapslices(std ∘ skipmissing, x_dist[x_dist[:, 1] .== col, 2:no_params+1], dims=1)
+	pop_var = mapslices(var ∘ skipmissing, x_dist[x_dist[:, 1] .== col, 2:no_params+1], dims=1)
+	pop_stdev = sqrt.(pop_var)
 
 	# calculate offspring trait
 	# is col the right index to use? -- ask John
@@ -43,10 +44,10 @@ function DrawNewTraits(x_dist, parent_traits, h2_vect, no_params, no_columns, co
 	offspring_genotypes = reshape(offspring_genotypes, 1, length(SIGMA))
 	
 	## CHECK WITH John
-	traits_out = [offspring_traits offspring_genotypes]
+	#traits_out = [offspring_traits offspring_genotypes]
 	## this does hcat
 	## for vcat, do [offspring_traits ; offspring_genotypes]
-	return traits_out
+	return offspring_traits, offspring_genotypes
 	
 end
 
