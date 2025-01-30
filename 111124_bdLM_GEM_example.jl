@@ -193,11 +193,15 @@ for j = i:length(GEM_type)
 
             terms = [birth_R, death_R]
 
-            [event_index, c_sum, row, col] = PickEvent(terms, no_species)
+            [c_sum, row, col] = PickEvent(terms, no_species)
 
-            c_sum = [10 20]
-            row = 1 #event
-            col = 1 #state
+            #c_sum = [10 20]
+            #row = 1 #event
+            #col = 1 #state
+            ## row = 1 && col == 1 - sp1 birth
+            ## row = 2 && col == 2 - sp1 death
+            ## row = 1 && col == 1 - sp2 birth
+            ## row = 2 && col == 2 - sp2 death 
             if row == 1
                 parent_traits = x_dist[Int(whosnext[col]), 2:no_columns] 
                         
@@ -267,7 +271,7 @@ for j = i:length(GEM_type)
         pop_data_out[3,:,ii] = prctile(pop_stand[ii,:,:],upper_ci_level,3);
     end
     =#
-    
+    .
     x_data_out = MediansCI(upper_ci_level,lower_ci_level,x_stand) # trait
     x_var_data_out = MediansCI(upper_ci_level,lower_ci_level,x_var_stand) # variance in trait 
     
