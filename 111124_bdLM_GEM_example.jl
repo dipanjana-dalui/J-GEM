@@ -14,12 +14,13 @@ using StatsBase
 
 #include("AppendState.jl")
 
-include("CalcAvgFreq.jl")
-include("DrawNewTrait.jl")
-include("InitiatePopulation.jl")
-include("MedianCi.jl")
-include("PickEvent.jl")
-include("PickIndividual.jl")
+include("bdLM_CalcAvgFreq.jl")
+include("bdLM_DrawNewTrait.jl")
+include("bdLM_InitiatePop.jl")
+#include("bdLM_CIMedian.jl")
+include("bdLM_PickEvent.jl")
+include("bdLM_PickIndiv.jl")
+include("bdLM_WhoIsNext.jl")
 
 
 Random.seed!(42)  # use only when debugging 
@@ -33,13 +34,13 @@ Random.seed!(42)  # use only when debugging
 # For example, I will create a GEM type array of Integer 1, 2, 3: these are our
 # 3 types of GEMS.
 
-GEM_type = Array{Int64}([1 2 3])
-GEM_ver = Array{Int64}([1 2 3]) ## another upper level loop is needed
+GEM_type = Array{Int64}([1])
+GEM_ver = Array{Int64}([1]) ## another upper level loop is needed
 
 num_rep = 5
 
-h2_levels = Array{Float64}([0, 0.25, 0.5])
-cv_levels = Array{Float64}([0, 0.2])
+#h2_levels = Array{Float64}([0, 0.25, 0.5])
+#cv_levels = Array{Float64}([0, 0.2])
 
 #= *** INITIAL CHOICES *** =#
 
@@ -93,8 +94,12 @@ or,
 h2_vect = [0.2 0 0 0] # row corresponds to state, 
                       #col corresponds to trait heri
 =#
-h2 = [0.2] #1xno_states; col parameter later decides which h2 value
-            # will get multiplied to parent traits 
+
+h2_vect = [0.2] #1xno_states; col parameter later decides which h2 value
+            # will get multiplied to parent traits
+
+cv_vect = [0.2, 0, 0, 0]
+ 
 ######################################################
 ######################################################
 ## Okay let's test the parameters in a ODE simulations
@@ -121,9 +126,10 @@ plot(sol, linewidth=3,
 # All looks good
 ######################################################
 
-for j = i:length(GEM_type)
+for j = 1:length(GEM_type)
     t = 0
-    stand_time = range( 0, t_max, step = min_time_step_to_store)
+    stand_time = range(0, t_max, step = min_time_step_to_store)
+    stand_time = collect(stand_time)
     num_time_steps = length(stand_time)
 
     ## memory preallocation should happen here for the entire simulations
@@ -157,7 +163,8 @@ for j = i:length(GEM_type)
             
         for ii = 1:no_species #8×21×1 Array{Float64, 3}:[:, :, 1] 
             x_slice[:, 1, ii] = CalcAverageFreqs(ii, no_columns, no_params, x_dist_init)
-            x_var_slice[1:no_params,1,ii] = var(x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
+            x_var_slice[1:no_params,1,ii] = mapslices(var ∘ skipmissing,x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
+
         end
 
         # count up each individual for all states
@@ -177,7 +184,7 @@ for j = i:length(GEM_type)
                                   # perhaps we do need the the jj loop l153-159
             
             # Find who is next
-            FindWhoNext = WhoIsNext(x_dist,no_species,no_columns,no_params,y0,
+            FindWhoNext = WhoIsNext(x_dist,no_species,no_columns,no_params,R,
                                           state_par_match,state_geno_match)
             params_next = FindWhoNext[1]
             genotypes_next = FindWhoNext[2]
@@ -193,25 +200,28 @@ for j = i:length(GEM_type)
 
             terms = [birth_R, death_R]
 
-            [c_sum, row, col] = PickEvent(terms, no_species)
+            PickedEvent = PickEvent(terms, no_species)
+            c_sum = PickedEvent[1]
+            row = PickedEvent[2]
+            col = PickedEvent[3]
 
-            #c_sum = [10 20]
-            #row = 1 #event
-            #col = 1 #state
             ## row = 1 && col == 1 - sp1 birth
-            ## row = 2 && col == 2 - sp1 death
-            ## row = 1 && col == 1 - sp2 birth
+            ## row = 2 && col == 1 - sp1 death
+            ## row = 1 && col == 2 - sp2 birth
             ## row = 2 && col == 2 - sp2 death 
-            if row == 1
+            if row == 1 && col == 1
                 parent_traits = x_dist[Int(whosnext[col]), 2:no_columns] 
                         
                 new_trait = DrawNewTraits(x_dist,parent_traits,h2_vect,no_params,no_columns,col)
                 # new_trait = offspring_traits, offspring_genotypes
                 # ([4.676604793653037 1.0 0.0011999999999999995 0.0010000000000000002], [NaN NaN NaN NaN])
-
+ 
                 new_trait_row = hcat(col, new_trait)
+                #1  ([3.72285 1.0 0.0012 0.001], [NaN NaN NaN NaN])
+                new_trait_row = hcat(new_trait_row[1],new_trait_row[2][1],new_trait_row[2][2])
+
                 x_dist = vcat(x_dist, new_trait_row) 
-            elseif row == 2 # death 
+            elseif row == 2 && col ==1 # death 
                 # delete the individual by making a new copy of the matrix
                 # without the row 
                 x_dist = x_dist[1:size(x_dist, 1) .!= Int(whosnext[col]), :]
@@ -228,11 +238,12 @@ for j = i:length(GEM_type)
                 
                 for ii in 1:no_species
                     x_slice[:,time_step_index,ii] = CalcAverageFreqs(ii,no_columns,no_params,x_dist)
-                    x_var_slice[1:no_params,time_step _index,ii] = var(x_dist[x_dist[:,1]==ii,2:no_params+1],1)
+                    x_var_slice[1:no_params,time_step_index,ii] = mapslices(var∘ skipmissing, x_dist[x_dist[:,1].==ii,2:no_params+1],dims=1)
+                   
                 end
                 time_step_index = time_step_index + 1 # advance to next standardized time
-                time_step = stand_times(time_step _index)
-                =#
+                time_step = stand_time[time_step_index]
+                
             end
 
             #last thing to do before exiting the loop:
@@ -250,18 +261,19 @@ for j = i:length(GEM_type)
         pop_slice[1:no_species, time_step_index] = R
         for ii = 1:no_species
               x_slice[:,time_step_index,ii] = CalcAverageFreqs(ii,no_columns,no_params,x_dist);
-              x_var_slice[1:no_params,time_step_index,ii] = var(x_dist[x_dist[:,1].== ii,2:no_params+1],dims=1);
+              x_var_slice[1:no_params,time_step_index,ii] = mapslices(var∘ skipmissing, x_dist[x_dist[:,1].== ii,2:no_params+1],dims=1)
         end
 
         ## save the pop and param/geno values for the whole replicate in premade containers  c
+        #i = 1
         pop_stand[:, :, i] = pop_slice
         x_stand[:, :, :, i] = x_slice 
         x_var_stand[:, :, :, i] = x_var_slice ##
 
     end ## end of for loop for single simulation replicate
 
-    upper_ci_level = 75
-    lower_ci_level = 25
+    #upper_ci_level = 75
+    #lower_ci_level = 25
 
     # pop_stand is no spp x no time step x no replicates
     #=MATLAB
@@ -271,12 +283,8 @@ for j = i:length(GEM_type)
         pop_data_out[3,:,ii] = prctile(pop_stand[ii,:,:],upper_ci_level,3);
     end
     =#
-    .
-    x_data_out = MediansCI(upper_ci_level,lower_ci_level,x_stand) # trait
-    x_var_data_out = MediansCI(upper_ci_level,lower_ci_level,x_var_stand) # variance in trait 
     
-       
-
-
-
+    #x_data_out = MediansCI(upper_ci_level,lower_ci_level,x_stand) # trait
+    #x_var_data_out = MediansCI(upper_ci_level,lower_ci_level,x_var_stand) # variance in trait 
+    
 end

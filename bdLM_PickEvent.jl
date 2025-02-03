@@ -2,8 +2,6 @@
 #		  FUNCTION Pick Event          #
 ##############################################
 
-PickEvent(terms, no_species)
-
 function PickEvent(terms, no_species)
 	terms = reshape(terms, 1, length(terms)) #reshape(ele_to_reshape, new_row, new_col)
 	c_sum = cumsum(terms, dims=2)  

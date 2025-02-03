@@ -1,3 +1,4 @@
+#=
 function AppendStates(num_similar_states, mat)
 	temp = []
 	for i in 1:size(mat, 1)
@@ -5,3 +6,6 @@ function AppendStates(num_similar_states, mat)
 		end
 	return vcat(temp...)
 end
+=#
+
+#NOT USING THIS FUNCTION THIS TIME
