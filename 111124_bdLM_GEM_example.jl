@@ -34,8 +34,8 @@ Random.seed!(42)  # use only when debugging
 # For example, I will create a GEM type array of Integer 1, 2, 3: these are our
 # 3 types of GEMS.
 
-GEM_type = Array{Int64}([1])
-GEM_ver = Array{Int64}([1]) ## another upper level loop is needed
+GEM_type = [1]
+GEM_ver = [1] ## another upper level loop is needed
 
 num_rep = 5
 
@@ -52,10 +52,10 @@ R0 = Array{Float64}([10.0]) #we picked the initial population
 b_max_mu = 4.0
 b_max_sigma = 0.01
 
-b_s_mu = 0.0012
+b_s_mu = 0.000012
 b_s_sigma = 0.0
 
-d_s_mu = 0.001
+d_s_mu = 1e-10
 d_s_sigma = 0.0
 
 d_min_mu = 1
@@ -70,11 +70,13 @@ params = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
 
 # calculate initial constant 
 r_max = b_max-d_min
-K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
+#K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
+K = 1000
 
 no_species = length(R0) ## also, no_species = size(state_par_match, 1) 
 no_params = length(params)  ## also, size(state_par_match, 2)
 
+#state_par_match = Array{Int64}([1, 1, 1, 1])
 state_par_match = SMatrix{no_species, no_params}(1, 1, 1, 1)
 state_geno_match = SMatrix{no_species, no_params}(0, 0, 0, 0)
 geno_par_match = SMatrix{no_species, no_params}(0, 0, 0, 0)
@@ -82,8 +84,8 @@ geno_par_match = SMatrix{no_species, no_params}(0, 0, 0, 0)
 which_par_quant = state_par_match - geno_par_match
 no_columns = no_params + 1 + size(state_geno_match, 2) 
 
-t_max = 20.0 # we will keep it low for checking purpose
-min_time_step_to_store = 1
+t_max = 5.0 # we will keep it low for checking purpose
+min_time_step_to_store = 0.1
 
 #= fix later
 cv_vect = SMatrix{no_params,no_species}(0.2, 0, 0, 0)
@@ -100,6 +102,7 @@ h2_vect = [0.2] #1xno_states; col parameter later decides which h2 value
 
 cv_vect = [0.2, 0, 0, 0]
  
+#=
 ######################################################
 ######################################################
 ## Okay let's test the parameters in a ODE simulations
@@ -119,14 +122,17 @@ prob = ODEProblem(f,u0,tspan)
 sol = solve(prob)
 
 plot(sol, linewidth=3,
-     title="solution to the logistic growth equation",
+     title="solution to the logistic equation",
      xaxis="Time (t)", yaxis="R(t)",
      label="K=500") 
 
 # All looks good
 ######################################################
+=#
 
 for j = 1:length(GEM_type)
+    println("\nj: $j")
+#    j = 1
     t = 0
     stand_time = range(0, t_max, step = min_time_step_to_store)
     stand_time = collect(stand_time)
@@ -135,20 +141,26 @@ for j = 1:length(GEM_type)
     ## memory preallocation should happen here for the entire simulations
     ## these are all the data structure we are storing
     pop_stand = zeros(no_species, num_time_steps, num_rep )
+    @show pop_stand
     x_stand = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep) #trait
     x_var_stand = fill(NaN, no_columns-1,num_time_steps, no_species, num_rep) # trait variance 
 
     pop_data_out = fill(NaN, 3, num_time_steps, no_species)
+    @show pop_data_out
 
     for i = 1:num_rep
+        println("\ni: $i")
+ #       i=1
         t = 0
         #save a copy inside the loop to update
-        R = R0
+        R0 = copy(R0)
+        R = copy(R0)
+        println("\nR0: $R0")
         ## all structures made here are temp and exist only inside the
         ## replication loop
         #init_comm_mat =  MMatrix{R0, no_columns}(fill(NaN, comm_mat_rows, no_columns))
         init_comm_mat =  Array{Float64}(fill(NaN, Int(sum(R0)), no_columns))
-
+        #@show init_comm_mat
         pop_slice = Array{Float64}(fill(0.0, no_species, num_time_steps))
         x_slice = fill(NaN, no_columns-1, num_time_steps, no_species)
         x_var_slice = fill(NaN, no_columns-1, num_time_steps, no_species)
@@ -160,51 +172,63 @@ for j = 1:length(GEM_type)
         #draw initial population: 10x9 Matrix{Float64}
         x_dist_init = InitiatePop(R0, which_par_quant, state_geno_match, state_par_match,
             init_comm_mat, params, cv_vect) ## sum(R0) number of rows and no_col num of cols
+        
+        #@show x_dist_init
             
         for ii = 1:no_species #8×21×1 Array{Float64, 3}:[:, :, 1] 
+            #ii = 1
             x_slice[:, 1, ii] = CalcAverageFreqs(ii, no_columns, no_params, x_dist_init)
             x_var_slice[1:no_params,1,ii] = mapslices(var ∘ skipmissing,x_dist_init[x_dist_init[:,1] .== ii,2:no_params+1],dims=1)
 
         end
 
-        # count up each individual for all states
+        # count up each individual for all states after the first sampling
         for jj = 1:length(R)
                 x = init_comm_mat[:,1] #extract first col
                 #typeof(x)
                 R[jj] = count(.==(jj), x)
                 #R[jj] = count(x -> (x.==jj), init_comm_mat)
         end # this is suppose to give the count of individuals in each population
-
+        #@show R
 
         x_dist = x_dist_init
         time_step_index = 2
         time_step = stand_time[time_step_index]
 
-        while t < t_max && sum(R) >= 1 # <--- MAKE SURE THIS IS THE RIGHT R VALUE - 
+
+        while t < t_max && 1 <=  sum(R) < K #<--- MAKE SURE THIS IS THE RIGHT R VALUE - 
                                   # perhaps we do need the the jj loop l153-159
             
             # Find who is next
             FindWhoNext = WhoIsNext(x_dist,no_species,no_columns,no_params,R,
                                           state_par_match,state_geno_match)
+            #@show FindWhoNext
             params_next = FindWhoNext[1]
             genotypes_next = FindWhoNext[2]
             whosnext = FindWhoNext[3]
             # R birth
-            b_max = params[1] # max birth
-            d_min = params[2] # min death
-            b_s = params[3] # density dependence of birth
-            d_s = params[4] 
-
-            birth_R =  (b_max - b_s*R[1])*R[1]
-            death_R =  (d_min - d_s*R[1])*R[1]
+            b_max = params_next[1] # max birth
+            d_min = params_next[2] # min death
+            b_s = params_next[3] # density dependence of birth
+            d_s = params_next[4] 
+            @show [b_max, d_min]
+            
+            # note[26.02.25] b_s and d_s should actually be calc using K (see DD derivation)
+            # set b_s = b_max/K and d_s = d_min/K.
+            # birth_R =  (b_max - b_s*R[1])*R[1]
+            # death_R =  (d_min - d_s*R[1])*R[1]
+            birth_R =  (b_max - (b_max/K)*R[1])*R[1]
+            death_R =  (d_min - (d_min/K)*R[1])*R[1]
+            
 
             terms = [birth_R, death_R]
+            @show terms
 
             PickedEvent = PickEvent(terms, no_species)
             c_sum = PickedEvent[1]
             row = PickedEvent[2]
             col = PickedEvent[3]
-
+            #@show PickedEvent
             ## row = 1 && col == 1 - sp1 birth
             ## row = 2 && col == 1 - sp1 death
             ## row = 1 && col == 2 - sp2 birth
@@ -249,11 +273,13 @@ for j = 1:length(GEM_type)
             #last thing to do before exiting the loop:
             # ADVANCE TIME 
             time_advance = exp(-1/c_sum[end])/(c_sum[end])
-            if isnan(time_advance) == 0
+            if isnan(time_advance) == 0 && time_advance > 0 ##
                 t = t + time_advance
             else
                 break
             end
+            println("\nUpdated_R: $R")
+            println("\nt: $t")
 
         end #end of while loop running the core GEM
 
@@ -269,6 +295,7 @@ for j = 1:length(GEM_type)
         pop_stand[:, :, i] = pop_slice
         x_stand[:, :, :, i] = x_slice 
         x_var_stand[:, :, :, i] = x_var_slice ##
+        @show pop_stand
 
     end ## end of for loop for single simulation replicate
 
@@ -288,3 +315,4 @@ for j = 1:length(GEM_type)
     #x_var_data_out = MediansCI(upper_ci_level,lower_ci_level,x_var_stand) # variance in trait 
     
 end
+
