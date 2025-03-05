@@ -17,14 +17,10 @@ function InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 		init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1] .= qq
 		for zz = 1:length(params)
 			#zz = 1
-			# something fucky here traits_to_assign. The last argument should be the number y0
-			# for the corresponding state. Let's over-rule traits_to_assign
-			# for now and set it to [1 1 1 1] instead of [0 0 0 0]
 			traits_to_assign = state_par_match .* y0
 			# SINCE BOTH PARAM AND CV_VECT HAVE 4 ROWS AND 1 COL - JULIA IS BY DEFAULT A COL VEC 
 			# WE WILL SWAP THE INDICES TO BE (zz, qq)
 			temp = PickIndiv(params[zz,qq],cv_vect[zz, qq]*params[zz, qq],Int(traits_to_assign[qq,zz])) 
-			#	talk to John
 
 			if !isempty(temp) #when temp has a non-zero value
 				init_comm_mat[Int(starting_row[qq]):Int(end_row[qq]), 1+zz] .= temp

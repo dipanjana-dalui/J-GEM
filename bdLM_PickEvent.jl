@@ -1,5 +1,5 @@
 ##############################################
-#		  FUNCTION Pick Event          #
+#		  	  FUNCTION PICK EVENTS           #
 ##############################################
 
 function PickEvent(terms, no_species)

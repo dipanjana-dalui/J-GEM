@@ -7,15 +7,9 @@ function DrawNewTraits(x_dist, parent_traits, h2_vect, no_params, no_columns, co
 	# QUANTITATIVE TRAITS
 	pop_mean = mapslices(mean ∘ skipmissing, x_dist[x_dist[:, 1] .== col, 2:no_params+1], dims=1)
 	# we want the means to be for each parameter
-	#mean(x_dist[x_dist[:,1].==col, 2:no_params+1])
 	pop_var = mapslices(var ∘ skipmissing, x_dist[x_dist[:, 1] .== col, 2:no_params+1], dims=1)
 	pop_stdev = sqrt.(pop_var)
 
-	# calculate offspring trait
-	# is col the right index to use? -- ask John
-	# reshape too have coorect dimensions (pre reshape, parent_traits is a 4-element Vector{Float64}
-	# and pop_mean is a 1x4 Matrix{Float64})
-	
 	## CHECK WITH h2 structure, may not need col (state ID)
 	exp_offspring_traits = h2_vect[col] .* reshape(parent_traits[1:no_params], 1, 4) .+ (1-h2_vect[col]) .* pop_mean
 	# 1×4 Matrix{Float64}:
