@@ -13,7 +13,7 @@ function PickIndiv(x, std, N)
 	# length(SIGMA) -- to loop over various values of sigma??
 	return x_out
 end
-
+# added a new line here
 ##############################################
 #					SCRATCH			         #
 ##############################################

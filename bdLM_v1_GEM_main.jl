@@ -26,7 +26,7 @@ include("bdLM_WhoIsNext.jl")
 
 Random.seed!(42)  # use only when debugging 
 
-#= *** DESIGN CHOICES *** =#0
+#= *** DESIGN CHOICES *** =#
 # Major decision time: here you will decide on how many GEM types you want to run
 # in total. You can also choose to run the GEM types separately.
 
