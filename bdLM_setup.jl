@@ -61,6 +61,7 @@ b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1) # density dependence of birth
 d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1) # density dependence of death
 
 params = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
+# par_names = ("b_max", "d_min", "b_s", "d_s")
 
 # calculate initial constant 
 r_max = b_max-d_min
@@ -133,14 +134,16 @@ plot(sol, linewidth=3,
 # - we have to make some containers to store the simulation
 # outputs. 
 
-######################################################
-##               PAR & GENOTYPE MATCH               ##
-######################################################
+#=***************************************************
+**               PAR & GENOTYPE MATCH              **
+***************************************************=#
 state_par_match = Array{Int64}([1 1 1 1]) #no_col = params, no_row = state
 state_geno_match = Array{Int64}([0 0 0 0])
 geno_par_match = Array{Int64}([0 0 0 0])
 
-
+# might be good practice to write down the order of of the parameters 
+# par_names = ("b_max", "d_min", "b_s", "d_s")
+# geno_names = ("g_b_max", "g_d_min", "g_b_s", "g_d_s")
 which_par_quant = state_par_match - geno_par_match
 no_columns = no_params + 1 + size(state_geno_match, 2) 
 
@@ -182,11 +185,12 @@ GEM_run = GEM_sim(GEM_ver::Vector{Int64},
     pop_stand_out_all::AbstractArray{Float64, 4} # Output array to be populated
     )
 
+    
+
 ## Jun 17: everything up to this point works.
 # Things to change/discuss with John about changing:
 #         - (i)  parallet the replicates
 #         - (ii) add a separate birth death function, or 
 #                make it part of the setup file?
 #         - (ii) verbose and error message?
-
 

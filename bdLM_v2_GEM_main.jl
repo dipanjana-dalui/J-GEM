@@ -201,17 +201,90 @@ function GEM_sim(GEM_ver::Vector{Int64}, # Adjust type if known (e.g., Vector{St
     return nothing
 end
 
-out = vec(pop_stand_out_all);
-out_mat = reshape(out, num_time_steps, num_rep, length(GEM_ver))
-typeof(out_mat)
-#=
-out_dat_ver1 = DataFrame(out_mat[:,:,1], :auto)
 
-dat = hcat(stand_time, out_dat_ver1, makeunique=true)
+## SAVING THE POPULATION TIME SERIES IN DATAFRAME
+pop_out = vec(pop_stand_out_all)
+pop_out_mat = reshape(pop_out, no_species, num_time_steps, num_rep, length(GEM_ver))
 
-plot(dat.x1, dat.x1_1)
-plot!(dat.x1, dat.x2)
-plot!(dat.x1, dat.x3)
-plot!(dat.x1, dat.x4)
-plot!(dat.x1, dat.x5)
-=#
+pop_out_gem_v_store = Vector{DataFrame}(undef, length(GEM_ver)) 
+pop_out_spp_store = Vector{DataFrame}(undef, no_species)
+
+for k = 1:no_species
+    for i = 1:length(GEM_ver)
+        #k = 1; i = 1
+        temp = DataFrame(hcat(stand_time, fill(i,num_time_steps),
+                        fill(k,num_time_steps)),:auto)
+        rename!(temp, :x1 => :time, :x2 => :GEM_ver, :x3 => :state_ID)
+        pop_out_temp = DataFrame(pop_out_mat[k,:,:,i], :auto)
+        pop_out_temp = hcat(temp, pop_out_temp, makeunique=true)
+        pop_out_gem_v_store[i] = pop_out_temp
+    end
+    pop_out_spp_store = vcat(pop_out_gem_v_store...)
+end
+pop_df = vcat(pop_out_spp_store)
+
+## SAVING THE PARAMETER AND GENOTYPE MEANS
+
+x_out = vec(x_stand_out_all)
+
+x_out_mat = reshape(x_out, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+ 
+par_names = ["b_max", "d_min", "b_s", "d_s"]
+geno_names = ["g_b_max", "g_d_min", "g_b_s", "g_d_s"]
+col_names = vcat(par_names, geno_names)
+
+x_out_spp_store = Vector{DataFrame}(undef, no_species)
+x_out_gem_v_store = Vector{DataFrame}(undef, length(GEM_ver)) 
+x_out_rep_store = Vector{DataFrame}(undef, num_rep)
+
+
+for k = 1:no_species
+    for i = 1:length(GEM_ver)
+        for j = 1:num_rep
+            col_df = DataFrame(hcat(stand_time,
+                    fill(j,num_time_steps),
+                    fill(i,num_time_steps),
+                    fill(k,num_time_steps)),:auto)
+            rename!(col_df, :x1 => :time, :x2 => :rep, :x3 => :GEM_ver, :x4 => :state_ID)
+            x_temp = x_out_mat[:,:,k,j,i]
+            x_temp = DataFrame(transpose(x_temp), :auto)
+            rename!(x_temp, col_names)
+            x_out_dat = hcat(col_df, x_temp)
+            x_out_rep_store[j] = x_out_dat
+        end
+        x_out_gem_v_store[i] = vcat(x_out_rep_store...)
+    end
+    x_out_spp_store[k] = vcat(x_out_gem_v_store...)
+end
+par_geno_df = vcat(x_out_spp_store...)
+
+#######################
+
+x_out_var = vec(x_var_stand_out_all)
+
+x_out_var_mat = reshape(x_out_var, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+ 
+x_out_var_spp_store = Vector{DataFrame}(undef, no_species)
+x_out_var_gem_v_store = Vector{DataFrame}(undef, length(GEM_ver)) 
+x_out_var_rep_store = Vector{DataFrame}(undef, num_rep)
+
+
+for k = 1:no_species
+    for i = 1:length(GEM_ver)
+        for j = 1:num_rep
+            col_df = DataFrame(hcat(stand_time,
+                    fill(j,num_time_steps),
+                    fill(i,num_time_steps),
+                    fill(k,num_time_steps)),:auto)
+            rename!(col_df, :x1 => :time, :x2 => :rep, :x3 => :GEM_ver, :x4 => :state_ID)
+            x_temp = x_out_var_mat[:,:,k,j,i]
+            x_temp = DataFrame(transpose(x_temp), :auto)
+            rename!(x_temp, col_names)
+            x_out_var_dat = hcat(col_df, x_temp)
+            x_out_var_rep_store[j] = x_out_var_dat
+        end
+        x_out_var_gem_v_store[i] = vcat(x_out_var_rep_store...)
+    end
+    x_out_var_spp_store[k] = vcat(x_out_var_gem_v_store...)
+end
+par_geno_var_df = vcat(x_out_var_spp_store...)
