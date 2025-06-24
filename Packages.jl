@@ -1,6 +1,7 @@
 # packages.jl 
 # You must add any packages you need if you make major changes
-#=using Pkg
+#=
+using Pkg
 Pkg.add("DifferentialEquations")
 Pkg.add("Plots")
 Pkg.add("Distributions")
@@ -11,6 +12,9 @@ Pkg.add("StaticArrays")
 Pkg.add("BenchmarkTools")
 Pkg.add("StatsBase")
 Pkg.add("AlgebraOfGraphics")
+Pkg.add("Makie")
+Pkg.add("CairoMakie")
+
 =#
 
 
@@ -24,4 +28,9 @@ using StaticArrays
 using BenchmarkTools
 using StatsBase
 using AlgebraOfGraphics
+using CSV
+using AlgebraOfGraphics
+using Makie
+using CairoMakie 
+using Tidier
 

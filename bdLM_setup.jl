@@ -151,17 +151,17 @@ no_columns = no_params + 1 + size(state_geno_match, 2)
 ######################################################
 ##     STORAGE CONTAINERS FOR SIMULATION OUTPUT     ##
 ######################################################
-stand_time = range(0, t_max, step = min_time_step_to_store)
-stand_time = collect(stand_time)
-num_time_steps = length(stand_time)
+stand_time = range(0, t_max, step = min_time_step_to_store);
+stand_time = collect(stand_time);
+num_time_steps = length(stand_time);
 
 #pop_stand_out = fill(NaN, no_species, num_time_steps, num_rep)
 #x_stand_out = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep) #trait
 #x_var_stand_out = fill(NaN, no_columns-1,num_time_steps, no_species, num_rep) # trait variance 
 
-pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver))
-x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
-x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver))
+pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver));
+x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver));
+x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver));
 
 #=***************************************************
 **           CALL GEM SIMULATION FUNCTION          **
@@ -185,12 +185,29 @@ GEM_run = GEM_sim(GEM_ver::Vector{Int64},
     pop_stand_out_all::AbstractArray{Float64, 4} # Output array to be populated
     )
 
-    
+# The GEM_sim function returns the population time series, and the parameter mean/variances
+pop_time_series_df = GEM_run[1]
+#CSV.write("Pop_Time_Series.csv",pop_time_series_df)
 
-## Jun 17: everything up to this point works.
+trait_mean_df = GEM_run[2]
+#CSV.write(trait_mean_df)
+
+trait_var_df = GEM_run[3]
+#CSV.write(trait_var_df)
+
+
+
+# Jun 24: everything up to this point works.
 # Things to change/discuss with John about changing:
 #         - (i)  parallet the replicates
 #         - (ii) add a separate birth death function, or 
 #                make it part of the setup file?
-#         - (ii) verbose and error message?
-
+# OTHER DESIGN CHOICES
+# Modules
+# struct 
+#
+#
+#
+#
+#
+#

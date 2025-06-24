@@ -1,24 +1,29 @@
 ##############################################
-#		  DATA CLEANING & PLOT FUNC          #
+#		        PLOT FUNCtions               #
 ##############################################
 
-using  AlgebraOfGraphics
-using Tidier
+pop_time_series_df = GEM_run[1]
 
+function Pop_Plot(pop_time::DataFrame, show::Bool)
+    pop_stack = stack(pop_time, Not([:time, :GEM_ver, :state_ID]); 
+                    variable_name = :replicate, value_name = :value)
 
-########
+    pop_plot = data(pop_stack) * mapping(
+        :time,
+        :value,
+        #color = :replicate,
+        group = :replicate,
+        row = :GEM_ver => nonnumeric
+        ) *
+        visual(Lines)
+    if show
+        return draw(pop_plot)
+    else
+        return nothing
+    end
+end
 
+Pop_Plot(pop_time_series_df, false)
 
-
-
-#=
-out_dat_ver1 = DataFrame(out_mat[:,:,1], :auto)
-
-dat = hcat(stand_time, out_dat_ver1, makeunique=true)
-
-plot(dat.x1, dat.x1_1)
-plot!(dat.x1, dat.x2)
-plot!(dat.x1, dat.x3)
-plot!(dat.x1, dat.x4)
-plot!(dat.x1, dat.x5)
-=#
+trait_mean_df = GEM_run[2]
+trait_var_df = GEM_run[3]
