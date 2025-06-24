@@ -9,10 +9,8 @@ Anything that is preceeded by #### need not be changed
 
 =#
 
-include("Packages.jl")
-include("AuxillaryFunc.jl")
-
-
+include("functions/Packages.jl")
+include("functions/AuxillaryFunc.jl")
 
 #=*** set seed ***=#
 Random.seed!(42)  # use only when debugging 
@@ -166,7 +164,7 @@ x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep,
 #=***************************************************
 **           CALL GEM SIMULATION FUNCTION          **
 ***************************************************=#
-include("bdLM_v2_GEM_main.jl")
+include("functions/bdLM_v2_GEM_main.jl")
 
 GEM_run = GEM_sim(GEM_ver::Vector{Int64}, 
     t_max::Float64,
@@ -195,6 +193,7 @@ trait_mean_df = GEM_run[2]
 trait_var_df = GEM_run[3]
 #CSV.write(trait_var_df)
 
+Pop_Plot(pop_time_series_df, false)
 
 
 # Jun 24: everything up to this point works.

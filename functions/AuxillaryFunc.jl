@@ -7,7 +7,7 @@ include("bdLM_InitiatePop.jl")
 include("bdLM_PickEvent.jl")
 include("bdLM_PickIndiv.jl")
 include("bdLM_WhoIsNext.jl")
-
+include("bdLM_PlotFunc.jl")
 
 
 
