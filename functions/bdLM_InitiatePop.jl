@@ -27,7 +27,7 @@ function InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
 			end
 		end
 
-		# ALL?
+		# ALL? -- THIS NEEDS FIXING
 		if all(gts_to_assign[qq,:] .> 0)
 			genotype = zeros(y0[qq], num_gts) 
 			# makes a matrix with communuty size no. of rows, and number of geno cols

@@ -78,7 +78,7 @@ no_params = length(params)  ## also, size(state_par_match, 2)
 # For example, I will create a GEM ver array of Integer 1, 2, 3: these are our
 # 3 vers of GEMS.
 
-GEM_ver = Vector{Int64}([1, 2, 3])
+GEM_ver = Vector{String}(["ver1","ver2", "ver3"])
 num_rep = 5
 t_max = 5.0 # we will keep it low for checking purpose
 min_time_step_to_store = 0.1
@@ -193,7 +193,7 @@ trait_mean_df = GEM_run[2]
 trait_var_df = GEM_run[3]
 #CSV.write(trait_var_df)
 
-Pop_Plot(pop_time_series_df, false)
+Pop_Plot(pop_time_series_df, true)
 
 
 # Jun 24: everything up to this point works.

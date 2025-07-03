@@ -1,7 +1,6 @@
 ##############################################
 #		        PLOT FUNCtions               #
 ##############################################
-
 function Pop_Plot(pop_time::DataFrame, show::Bool)
     pop_stack = stack(pop_time, Not([:time, :GEM_ver, :state_ID]); 
                     variable_name = :replicate, value_name = :value)
