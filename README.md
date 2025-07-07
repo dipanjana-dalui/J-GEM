@@ -1,17 +1,19 @@
-# USER-GUIDE-TO-J-GEM
- Tutorial and user guide code with examples
+\section{Gillespie Eco-Evolutionary Models (Julia) v7}
 
-#### Files you will need: 
+Analyse ecc-evolutionary feedback and dynamics using xxxxx 
 
-`bdLM_GEM_main.jl` - the main file where you will set up the simulation, and also the core simulation process 
-(perhaps break this into two and made the core GEM loop a function to make it more modular?)
+\section{Documentation}
+You can find a downloadable copy for the tutorial and documentation here.
 
-Below is the list of auxillary function files you would need to load to your working environment (all prefixed with bd_LM_):
-- `WhoIsNext.jl`
-- `DrawNewTraits.jl`
-- `PickEvent.jl`
-- `InitiatePop.jl`
-- `PickIndiv.jl`
-- `CaclAvgFreq.jl`
+An online version can be found here (add git pages link). 
 
-Each function file comes with a scract file section that is commented out, but can be used to check and debug each function. 
+\section{Installation}
+- requires Julia v1.10 or above
+- direct install command: 
+` `
+- download the latest version 
+
+\section{Getting started}
+
+\section{Questions}
+Email: ddalui2@unl.edu
