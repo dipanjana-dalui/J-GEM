@@ -38,4 +38,3 @@ terms = [10.0; 10.0; 10; 10]
 length(terms)
 reshape(terms, 1,length(terms))
 =#
-

@@ -49,26 +49,28 @@ death_P = m1*P1
 ***************************************************=#
 
 # define initial poopulation abundances 
-N0 = Vector{Int64}([10, 1]) #we picked the initial population 
+N0 = Vector{Int64}([5, 1]) #we picked the initial population 
 # R0 = Array{Float64}([10.0, 20.0]) #for two species initial population
 
 # bd-logistic parameters distribution  
 b_max_mu = 0.8
-b_max_sigma = 0.06
+b_max_sigma = 0.0
 
-d_min_mu = 0.1
+d_min_mu = 0.4
 d_min_sigma = 0.0
 
+#=
 b_s_mu = 1e-2
 b_s_sigma = 0.0
 
 d_s_mu = 1e-5
 d_s_sigma = 0.0
+=#
 
-sp_mu = 0.01
-sp_sigma = 0
+scr_mu = 0.005
+scr_sigma = 0
 
-fec_mu = 0.1
+fec_mu = 0.05
 fec_sigma = 0
 
 m_mu = 0.01
@@ -76,18 +78,18 @@ m_sigma = 0
 
 b_max = rand(LogNormal(log(b_max_mu), b_max_sigma), 1)  # max birth
 d_min = rand(LogNormal(log(d_min_mu), d_min_sigma), 1) # min death
-b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1) # density dependence of birth
-d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1) # density dependence of death
+#b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1) # density dependence of birth
+#d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1) # density dependence of death
 
-sp = rand(LogNormal(log(sp_mu), sp_sigma), 1)
+scr = rand(LogNormal(log(scr_mu), scr_sigma), 1)
 fec = rand(LogNormal(log(fec_mu), fec_sigma), 1)
 m = rand(LogNormal(log(m_mu), m_sigma), 1)
 
-param_init = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1], vec(sp)[1], vec(fec)[1], vec(m)[1]]
+param_init = [vec(b_max)[1], vec(d_min)[1], vec(scr)[1], vec(fec)[1], vec(m)[1]]
 
 # calculate initial constant 
 r_max = b_max-d_min
-K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
+#K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 
 no_species = length(N0) ## also, no_species = size(state_par_match, 1) 
 no_param = length(param_init)  ## also, size(state_par_match, 2)
@@ -102,10 +104,10 @@ no_param = length(param_init)  ## also, size(state_par_match, 2)
 # For example, I will create a GEM ver array of Integer 1, 2, 3: these are our
 # 3 vers of GEMS.
 
-num_rep = 5
+num_rep = 3
 GEM_ver = Vector{String}(["ver1", "ver2"])
-t_max = 5.0 # we will keep it low for checking purpose
-min_time_step_to_store = 0.1
+t_max = 10.0 # we will keep it low for checking purpose
+min_time_step_to_store = 0.5
 
 #= fix later: decide on the proper dimensions of h2 and cv
 so you can streamline it to scale to #species and #param 
@@ -122,7 +124,7 @@ h2_vect = [0.2 0 0 0] # row corresponds to state,
 ### CHECK WITH MANUSCRIPT and MATLAB version
 h2_vect = [0.0 0.0; 0.1 0.1] ## rows: GEM versions, cols: state ID
 
-cv_vect = [0.0 0.0; 0.01 0.01] ## rows: GEM versions, cols: state ID
+cv_vect = [0.0 0.0; 0.2 0.2] ## rows: GEM versions, cols: state ID
 
 #cv_vect = collect(transpose([0.2 0 0 0 0 0 0;
 #                             0 0 0 0 0 0 0])) #### THIS IS WRONG???
@@ -165,12 +167,15 @@ plot(sol, linewidth=3,
 #=***************************************************
 **               PAR & GENOTYPE MATCH              **
 ***************************************************=#
-state_par_match = Array{Int64}([1 1 1 1 0 0 0; 0 0 0 0 1 1 1]) #no_col = param_init, no_row = state
+state_par_match = Array{Int64}([1 1 0 0 0; 0 0 1 1 1]) #no_col = param_init, no_row = state
+state_geno_match = Array{Int64}([0 0 0 0; 0 0 0 0])
+geno_par_match = Array{Int64}([0 0 0 0 0; 0 0 0 0 0])
 
 no_columns = no_param + 1 + size(state_geno_match, 2) 
+which_par_quant = state_par_match - geno_par_match
 
-par_names = ["b_max", "d_min", "b_s", "d_s", "sp", "fec", "m"]
-geno_names = ["g_b_max", "g_d_min", "g_b_s", "g_d_s", "g_sp", "g_fec", "g_m"]
+par_names = ["b_max", "d_min", "scr", "fec", "m"]
+geno_names = ["g_1", "g_2", "g_3", "g_4"]
 ######################################################
 ##     STORAGE CONTAINERS FOR SIMULATION OUTPUT     ##
 ######################################################
@@ -208,50 +213,25 @@ GEM_run = GEM_sim(GEM_ver,
 
     
 
-GEM_run = GEM_sim(GEM_ver::Vector{String}, 
-    t_max::Float64,
-    no_species::Int64,
-    num_rep::Int64,
-    no_columns::Int64,
-    no_param::Int64,
-    N0::Vector{Float64},
-    which_par_quant::Matrix{Int64},
-    state_geno_match::Matrix{Int64},
-    state_par_match::Matrix{Int64},
-    param_init::Vector{Float64},
-    cv_vect::Matrix{Float64},
-    h2_vect::Vector{Float64},
-    par_names::Vector{String},
-    geno_names::Vector{String},
-    pop_stand_out_all::Array{Float64, 4}
-    )
-
 # The GEM_sim function returns the population time series, and the parameter mean/variances
 pop_time_series_df = GEM_run[1]
+
 #CSV.write("Pop_Time_Series.csv",pop_time_series_df)
 
 trait_mean_df = GEM_run[2]
 #CSV.write(trait_mean_df)
 
+trait_mean_df[trait_mean_df.GEM_ver.==2,:]
+trait_mean_df[trait_mean_df.GEM_ver.==2,:]
+
+
+
 trait_var_df = GEM_run[3]
 #CSV.write(trait_var_df)
 
-pop_time_series_df[1]
-
-Pop_Plot(pop_time_series_df[2], true)
 
 
-# Jun 24: everything up to this point works.
-# Things to change/discuss with John about changing:
-#         - (i)  parallet the replicates
-#         - (ii) add a separate birth death function, or 
-#                make it part of the setup file?
-# OTHER DESIGN CHOICES
-# Modules
-# struct 
-#
-#
-#
-#
-#
-#
+Pop_Plot(pop_time_series_df, 2)
+
+Trait_Plot(trait_mean_df, trait_var_df, 
+          STATEID::INT, GEM_VER::INT, "trait_name")

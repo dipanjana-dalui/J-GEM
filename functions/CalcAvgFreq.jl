@@ -1,5 +1,5 @@
 ##############################################
-#		FUNCTION CALC MEDIAN AND VAR         #
+#		FUNCTION CALC AVG FREQUENCIES        #
 ##############################################
 function CalcMedian(ii::Int64, no_columns::Int64, no_param::Int64, x_dist::Matrix{Float64})
 	# Step 1: Quantitative trait medians (ignoring NaN values)
@@ -33,16 +33,15 @@ function CalcVar(ii::Int64, no_param::Int64, x_dist::Matrix{Float64})
 	return trait_var
 end
 
-
 ##############################################
 #					SCRATCH			         #
 ##############################################
 #=
 ii = 1 #number of species
 no_columns = 9
-no_param = 4
+no_params = 4
 x_dist = x_dist_init
 
-CalcAverageFreqs(ii, no_columns, no_param, x_dist_init)
+CalcAverageFreqs(ii, no_columns, no_params, x_dist_init)
 
 =#

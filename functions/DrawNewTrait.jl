@@ -1,8 +1,6 @@
 ##############################################
 #		  FUNCTION DRAW NEW TRAITS           #
 ##############################################
-
-
 function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64}, 
 						h2_vect::Matrix{Float64}, no_param::Int64, no_columns::Int64, col::Int64, j::Int64)
 
@@ -54,15 +52,14 @@ state_geno_match = SMatrix{1, 4}(0, 0, 0, 0)
 geno_par_match = SMatrix{1, 4}(0, 0, 0, 0)
 which_param_quant = state_geno_match - geno_par_match
 no_species = size(state_par_match, 1)
-no_param = size(state_par_match, 2)
-no_columns = no_param + 1 + size(state_geno_match, 2)
+no_params = size(state_par_match, 2)
+no_columns = no_params + 1 + size(state_geno_match, 2)
 
 x_dist
 col = 1 ## confusing - is this the index or the value??
 # col right now is 1 and acts as the species id
 parent_traits = x_dist[Int(whosnext[1]), 2:no_columns]
 no_columns
-no_param
+no_params
 
 =#
-

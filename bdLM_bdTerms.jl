@@ -22,7 +22,7 @@ outputting an array corresponding to multiple states,
 then be extra careful while using the output downstream.
 
 =#
-need: b_max, b_s, R, d_min, d_s
+# need: b_max, b_s, N, d_min, d_s
 
 function Birth(b_max,b_s, R)
     b_new = max((b_max - b_s*R[1])*R[1],0)
@@ -32,13 +32,14 @@ function Death(d_min, d_s, R)
     d_new = (d_min + d_s*R[1])*R[1]
 end
 
+function event_terms(params_next::Matrix{Float64}, N::Vector{Int64})
+    b_max = params_next[1,1] # max birth
+    d_min = params_next[1,2] # min death
+    b_s = params_next[1,3] # density dependence of birth
+    d_s = params_next[1,4]
 
-#= CHECK to see that birth and death terms are 
-lined up correctly after they are passed through PickedEvent.
-            #@show PickedEvent
-            ## row = 1 && col == 1 - sp1 birth
-            ## row = 2 && col == 1 - sp1 death
-            ## row = 1 && col == 2 - sp2 birth
-            ## row = 2 && col == 2 - sp2 death 
-=#
+    birth_H =  Birth(b_max, b_s, N)
+    death_H =  Death(d_min, d_s, N)
+    return birth_H, death_H
+end
 

@@ -20,16 +20,10 @@ function GEM_sim(GEM_ver::Vector{String},
     h2_vect::Matrix{Float64},
     par_names::Vector{String},
     geno_names::Vector{String},
-    pop_stand_out_all::Array{Float64, 4} 
+    pop_stand_out_all::Array{Float64} 
     )   
 
     # @assert statements should go here
-
-    # some conversions
-    #state_par_match = zero_to_nan(state_par_match)
-    #state_geno_match = zero_to_nan(state_geno_match)
-    #geno_par_match = zero_to_nan(geno_par_match)
-	#which_par_quant = zero_to_nan(which_par_quant)
 
 
 
@@ -122,12 +116,13 @@ function GEM_sim(GEM_ver::Vector{String},
                 for jj in 1:no_species
                     N[jj] = sum(x_dist[:,1].== jj)
                 end
-                println("updated \nN: $N")
+                #println("updated \nN: $N")
 
                 if t > time_step
                     pop_slice[1:no_species,time_step_index] .= N  # assign current values to sliced standard times
                     
                     for ii in 1:no_species
+                        
                         x_slice[:,time_step_index,ii] = CalcMedian(ii,no_columns,no_param,x_dist)
                         ## needs editing
                         x_var_slice[1:no_param,time_step_index,ii] = CalcVar(ii, no_param, x_dist)
@@ -189,7 +184,7 @@ function GEM_sim(GEM_ver::Vector{String},
         end
         pop_out_spp_store[k] = vcat(pop_out_gem_v_store...)
     end
-    pop_df = vcat(pop_out_spp_store)
+    pop_df = vcat(pop_out_spp_store...)
 
     ## SAVING THE PARAMETER AND GENOTYPE MEANS
 

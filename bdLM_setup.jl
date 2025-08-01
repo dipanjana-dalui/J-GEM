@@ -1,16 +1,12 @@
 #= Julia-GEM setup file
-
 This is your set up file.
-
 Anything that is preceeded by #=*** X X ***=# is for user to change
-
 Anything that is preceeded by #### need not be changed
-
 
 =#
 
 include("functions/Packages.jl")
-include("functions/AuxillaryFunc.jl")
+include("functions/AuxiliaryFunc.jl")
 
 #=*** set seed ***=#
 Random.seed!(42)  # use only when debugging 
@@ -37,12 +33,12 @@ death_N_i = d_i*N_i + (competition_ij) + (predation_ij)
 ***************************************************=#
 
 # define initial poopulation abundances 
-R0 = Vector{Float64}([10.0]) #we picked the initial population 
-# R0 = Array{Float64}([10.0, 20.0]) #for two species initial population
+N0 = Vector{Int64}([10.0]) #we picked the initial population 
+# N0 = Array{Float64}([10.0, 20.0]) #for two species initial population
 
 # bd-logistic parameters distribution  
 b_max_mu = 4.0
-b_max_sigma = 0.01
+b_max_sigma = 0.0
 
 b_s_mu = 0.0012
 b_s_sigma = 0.0
@@ -58,16 +54,17 @@ d_min = rand(LogNormal(log(d_min_mu), d_min_sigma), 1) # min death
 b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1) # density dependence of birth
 d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1) # density dependence of death
 
-params = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
+param_init = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
 # par_names = ("b_max", "d_min", "b_s", "d_s")
 
 # calculate initial constant 
 r_max = b_max-d_min
 K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 
-no_species = length(R0) ## also, no_species = size(state_par_match, 1) 
-no_params = length(params)  ## also, size(state_par_match, 2)
+no_species = length(N0) ## also, no_species = size(state_par_match, 1) 
+no_params = length(param_init)  ## also, size(state_par_match, 2)
 
+include("bdLM_bdTerms.jl")
 
 #=***************************************************
 **                  DESIGN CHOICES                 **
@@ -78,9 +75,9 @@ no_params = length(params)  ## also, size(state_par_match, 2)
 # For example, I will create a GEM ver array of Integer 1, 2, 3: these are our
 # 3 vers of GEMS.
 
-GEM_ver = Vector{String}(["ver1","ver2", "ver3"])
-num_rep = 5
-t_max = 5.0 # we will keep it low for checking purpose
+GEM_ver = Vector{String}(["ver1","ver2"])
+num_rep = 10
+t_max = 15.0 # we will keep it low for checking purpose
 min_time_step_to_store = 0.1
 
 #= fix later: decide on the proper dimensions of h2 and cv
@@ -94,11 +91,18 @@ h2_vect = [0.2 0 0 0] # row corresponds to state,
                       #col corresponds to trait heri
 =#
 
-h2_vect = [0.0] #1xno_states; col parameter later decides which h2 value
-            # will get multiplied to parent traits
+h2_vect = [0.0;
+            0.2]
+              ## rows: GEM versions, cols: state ID
+h2_mat = reshape(h2_vect, length(GEM_ver), no_species)
 
-cv_vect = [0.2, 0, 0, 0]
- 
+cv_vect = [0.0;
+            0.2]
+cv_mat = reshape(cv_vect, length(GEM_ver), no_species)
+#cv_vect = collect(transpose([0.2 0 0 0 0 0 0;
+#                             0 0 0 0 0 0 0])) #### THIS IS WRONG???
+                             ## row = state
+                             ## col = GEM version
 #=
 ******************************************************
 **          SANITY CHECK: DETERMINISTIC ODE         **
@@ -145,6 +149,8 @@ geno_par_match = Array{Int64}([0 0 0 0])
 which_par_quant = state_par_match - geno_par_match
 no_columns = no_params + 1 + size(state_geno_match, 2) 
 
+par_names = ["b_max", "d_min", "b_s", "d_s"]
+geno_names = ["g_1", "g_2", "g_3", "g_4"]
 
 ######################################################
 ##     STORAGE CONTAINERS FOR SIMULATION OUTPUT     ##
@@ -164,24 +170,26 @@ x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep,
 #=***************************************************
 **           CALL GEM SIMULATION FUNCTION          **
 ***************************************************=#
-include("functions/bdLM_v2_GEM_main.jl")
+#include("functions/bdLM_v2_GEM_main.jl")
 
-GEM_run = GEM_sim(GEM_ver::Vector{Int64}, 
-    t_max::Float64,
-    min_time_step_to_store::Float64,
-    no_species::Int64,
-    num_rep::Int64,
-    no_columns::Int64,
-    no_params::Int64,
-    R0::Vector{Float64},
-    which_par_quant::Matrix{Int64},
-    state_geno_match::Matrix{Int64},
-    state_par_match::Matrix{Int64},
-    params::Vector{Float64},
-    cv_vect::Vector{Float64},
-    h2_vect::Vector{Float64},
-    pop_stand_out_all::AbstractArray{Float64, 4} # Output array to be populated
-    )
+GEM_run = GEM_sim(GEM_ver, 
+                  t_max,
+                  no_species,
+                  num_rep,
+                  no_columns,
+                  no_params,
+                  N0,
+                  which_par_quant,
+                  state_geno_match,
+                  state_par_match,
+                  param_init,
+                  cv_mat,
+                  h2_mat,
+                  par_names,
+                  geno_names,
+                  pop_stand_out_all
+                )
+
 
 # The GEM_sim function returns the population time series, and the parameter mean/variances
 pop_time_series_df = GEM_run[1]
@@ -193,20 +201,6 @@ trait_mean_df = GEM_run[2]
 trait_var_df = GEM_run[3]
 #CSV.write(trait_var_df)
 
-Pop_Plot(pop_time_series_df, true)
+Pop_Plot(pop_time_series_df, 1)
 
-
-# Jun 24: everything up to this point works.
-# Things to change/discuss with John about changing:
-#         - (i)  parallet the replicates
-#         - (ii) add a separate birth death function, or 
-#                make it part of the setup file?
-# OTHER DESIGN CHOICES
-# Modules
-# struct 
-#
-#
-#
-#
-#
-#
+Trait_Plot(trait_mean_df, trait_var_df, 1, "b_max")
