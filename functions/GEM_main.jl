@@ -20,7 +20,9 @@ function GEM_sim(GEM_ver::Vector{String},
     h2_vect::Matrix{Float64},
     par_names::Vector{String},
     geno_names::Vector{String},
-    pop_stand_out_all::Array{Float64} 
+    pop_stand_out_all::Array{Float64},
+    x_stand_out_all::Array{Float64},
+    x_var_stand_out_all::Array{Float64}
     )   
 
     # @assert statements should go here

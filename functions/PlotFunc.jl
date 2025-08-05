@@ -11,10 +11,10 @@ function Pop_Plot(pop_time::DataFrame, i::Int64)
         :value,
         #color = :replicate,
         group = :variable,
-        row = :GEM_ver => nonnumeric
+        row = :GEM_ver => nonnumeric 
         ) *
         visual(Lines, color = :grey)
-    draw(pop_plot)    
+    draw(pop_plot, axis=(xlabel="Time", ylabel="Population abundances"))    
 end
 
 
@@ -71,7 +71,7 @@ function Trait_Plot(trait_mean::DataFrame, trait_var::DataFrame,
     )    * visual(Band, color = :lightgrey, alpha=0.5)
 
     tempplot = data(df2plot) * (mean_plot + var_plot)
-    finalplot = draw(tempplot, axis=(xlabel="time", ylabel="trait"))
+    finalplot = draw(tempplot, axis=(xlabel="Time", ylabel="Trait value"))
 
     return finalplot
 end

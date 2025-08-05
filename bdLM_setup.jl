@@ -34,7 +34,7 @@ death_N_i = d_i*N_i + (competition_ij) + (predation_ij)
 
 # define initial poopulation abundances 
 N0 = Vector{Int64}([10.0]) #we picked the initial population 
-# N0 = Array{Float64}([10.0, 20.0]) #for two species initial population
+# N0 = Array{Float64}([10.0, 20.0]) #for two state initial population
 
 # bd-logistic parameters distribution  
 b_max_mu = 4.0
@@ -61,7 +61,7 @@ param_init = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
 r_max = b_max-d_min
 K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 
-no_species = length(N0) ## also, no_species = size(state_par_match, 1) 
+no_state = length(N0) ## also, no_state = size(state_par_match, 1) 
 no_params = length(param_init)  ## also, size(state_par_match, 2)
 
 include("bdLM_bdTerms.jl")
@@ -81,10 +81,10 @@ t_max = 15.0 # we will keep it low for checking purpose
 min_time_step_to_store = 0.1
 
 #= fix later: decide on the proper dimensions of h2 and cv
-so you can streamline it to scale to #species and #param 
-cv_vect = SMatrix{no_params,no_species}(0.2, 0, 0, 0)
+so you can streamline it to scale to #state and #param 
+cv_vect = SMatrix{no_params,no_state}(0.2, 0, 0, 0)
 size(cv_vect)
-h2_vect = SMatrix{2,no_species}(0, 0.25) 
+h2_vect = SMatrix{2,no_state}(0, 0.25) 
 size(h2_vect)
 or, 
 h2_vect = [0.2 0 0 0] # row corresponds to state, 
@@ -94,11 +94,11 @@ h2_vect = [0.2 0 0 0] # row corresponds to state,
 h2_vect = [0.0;
             0.2]
               ## rows: GEM versions, cols: state ID
-h2_mat = reshape(h2_vect, length(GEM_ver), no_species)
+h2_mat = reshape(h2_vect, length(GEM_ver), no_state)
 
 cv_vect = [0.0;
             0.2]
-cv_mat = reshape(cv_vect, length(GEM_ver), no_species)
+cv_mat = reshape(cv_vect, length(GEM_ver), no_state)
 #cv_vect = collect(transpose([0.2 0 0 0 0 0 0;
 #                             0 0 0 0 0 0 0])) #### THIS IS WRONG???
                              ## row = state
@@ -159,13 +159,13 @@ stand_time = range(0, t_max, step = min_time_step_to_store);
 stand_time = collect(stand_time);
 num_time_steps = length(stand_time);
 
-#pop_stand_out = fill(NaN, no_species, num_time_steps, num_rep)
-#x_stand_out = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep) #trait
-#x_var_stand_out = fill(NaN, no_columns-1,num_time_steps, no_species, num_rep) # trait variance 
+#pop_stand_out = fill(NaN, no_state, num_time_steps, num_rep)
+#x_stand_out = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep) #trait
+#x_var_stand_out = fill(NaN, no_columns-1,num_time_steps, no_state, num_rep) # trait variance 
 
-pop_stand_out_all = fill(NaN, no_species, num_time_steps, num_rep, length(GEM_ver));
-x_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver));
-x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep, length(GEM_ver));
+pop_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver));
+trait_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver));
+trait_var_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver));
 
 #=***************************************************
 **           CALL GEM SIMULATION FUNCTION          **
@@ -174,7 +174,7 @@ x_var_stand_out_all = fill(NaN, no_columns-1,num_time_steps, no_species,num_rep,
 
 GEM_run = GEM_sim(GEM_ver, 
                   t_max,
-                  no_species,
+                  no_state,
                   num_rep,
                   no_columns,
                   no_params,
@@ -187,7 +187,9 @@ GEM_run = GEM_sim(GEM_ver,
                   h2_mat,
                   par_names,
                   geno_names,
-                  pop_stand_out_all
+                  pop_out_all,
+                  trait_out_all,
+                  trait_var_out_all
                 )
 
 
@@ -201,6 +203,7 @@ trait_mean_df = GEM_run[2]
 trait_var_df = GEM_run[3]
 #CSV.write(trait_var_df)
 
-Pop_Plot(pop_time_series_df, 1)
+p1 = Pop_Plot(pop_time_series_df, 1)
+savefig(p1, "bdLM_pop_plot.pdf")
 
 Trait_Plot(trait_mean_df, trait_var_df, 1, "b_max")
