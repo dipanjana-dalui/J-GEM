@@ -1,5 +1,5 @@
-# GEM (Julia version)
-[G]illespie [E]co-evolutionary [M]odel
+# J-GEM (Julia version)
+**[J]**ulia-**[G]**illespie **[E]**co-evolutionary **[M]**odel
 
 GEMs represent a significant advancement in eco-evolutionary modeling by integrating the effects of trait variation and fitness into ecological interactions of multiple species without relying on fitness gradient assumptions. With GEMs one can incorporate evolutionary feedback directly into ecological dynamics.
 
