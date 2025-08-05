@@ -8,7 +8,7 @@ Julia Version
 - Dipanjana Dalui (ddalui2@unl.edu)
   
 MATLAB versions (archived elsewhere)
-- John DeLong (jdelong2@unl.edu)
+- John DeLong (jpdelong@unl.edu)
 
 ## Installation
 For now, J-GEM is not a package, and you cannot install it on Julia using Pkg.add.
@@ -38,4 +38,4 @@ To set up any GEM analysis, you will be interacting with 2 files:
 The prefix **_xx_** indicates the example case. 
 
 ## Questions/Comments
-- email ddalui2@unl.edu or jdelong2@unl.edu
+- email ddalui2@unl.edu or jpdelong@unl.edu
