@@ -22,7 +22,6 @@ VSCode (optional, recommended)
 ## Documentation
 An quick reference user guide can be found [here](). 
 
-For detailed documentation, please see [add link to methods paper]
 
 ## Citation
 TBA
