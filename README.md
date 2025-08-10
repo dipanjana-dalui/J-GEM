@@ -1,14 +1,14 @@
-# GEM (Julia version)
-[G]illespie [E]co-evolutionary [M]odel
+# J-GEM (Julia version)
+[**J**]ulia - [**G**]illespie [**E**]co-evolutionary [**M**]odel
 
-one sentence blurb
+GEMs represent a significant advancement in eco-evolutionary modeling by integrating the effects of trait variation and fitness into ecological interactions of multiple species without relying on fitness gradient assumptions. With GEMs one can incorporate evolutionary feedback directly into ecological dynamics.
 
 ## Coded by
 Julia Version
 - Dipanjana Dalui (ddalui2@unl.edu)
   
 MATLAB versions (archived elsewhere)
-- John DeLong (jdelong2@unl.edu)
+- John DeLong (jpdelong@unl.edu)
 
 ## Installation
 For now, J-GEM is not a package, and you cannot install it on Julia using Pkg.add.
@@ -22,7 +22,6 @@ VSCode (optional, recommended)
 ## Documentation
 An quick reference user guide can be found [here](). 
 
-For detailed documentation, please see [add link to methods paper]
 
 ## Citation
 TBA
@@ -38,4 +37,4 @@ To set up any GEM analysis, you will be interacting with 2 files:
 The prefix **_xx_** indicates the example case. 
 
 ## Questions/Comments
-- email ddalui2@unl.edu or jdelong2@unl.edu
+- email ddalui2@unl.edu or jpdelong@unl.edu
