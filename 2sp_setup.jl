@@ -50,7 +50,7 @@ death_P = m1*P1
 
 # define initial poopulation abundances 
 N0 = Vector{Int64}([5, 1]) #we picked the initial population 
-# R0 = Array{Float64}([10.0, 20.0]) #for two species initial population
+# N0 = Array{Float64}([10.0, 20.0]) #for two species initial population
 
 # bd-logistic parameters distribution  
 b_max_mu = 0.8

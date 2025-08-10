@@ -24,17 +24,6 @@ function PickEvent(terms::Vector{Float64}, no_species::Int64)
 	end
 
 	return c_sum, row, col 
-	#return event_index, c_sum, row, col 
+	
 
 end
-
-##############################################
-#					SCRATCH			         #
-##############################################
-#=
-R = [10 11]
-no_species = length(R)
-terms = [10.0; 10.0; 10; 10]
-length(terms)
-reshape(terms, 1,length(terms))
-=#

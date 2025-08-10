@@ -32,16 +32,3 @@ function CalcVar(ii::Int64, no_param::Int64, x_dist::Matrix{Float64})
 	end
 	return trait_var
 end
-
-##############################################
-#					SCRATCH			         #
-##############################################
-#=
-ii = 1 #number of species
-no_columns = 9
-no_params = 4
-x_dist = x_dist_init
-
-CalcAverageFreqs(ii, no_columns, no_params, x_dist_init)
-
-=#

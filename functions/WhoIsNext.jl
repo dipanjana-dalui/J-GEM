@@ -29,39 +29,3 @@ function WhoIsNext(x_dist::Matrix{Float64}, no_species::Int64, no_columns::Int64
 	end
 	return params_next, genotype_next, whosnext
 end
-
-##############################################
-#					SCRATCH			         #
-##############################################
-#=
-R0 = 10
-y0 = R0 = 10
-state_par_match = SMatrix{1, 4}(1, 1, 1, 1) ## make static array?
-state_geno_match = SMatrix{1, 4}(0, 0, 0, 0)
-geno_par_match = SMatrix{1, 4}(0, 0, 0, 0)
-which_param_quant = state_geno_match - geno_par_match
-no_species = size(state_par_match, 1)
-no_params = size(state_par_match, 2)
-no_columns = no_params + 1 + size(state_geno_match, 2)  
-init_comm_mat =  MMatrix{R0, no_columns}(fill(NaN, R0, no_columns))
-
-n_par = size(state_par_match, 2) 
-params = MVector{n_par}(fill(NaN, n_par))
-
-params[1] = 4 ; # max birth
-params[2] = 1; # min death
-params[3] = 0.001; # density dependence of birth
-params[4] = 0.001;
-params
-cv_vect = [0.2, 0, 0, 0]
-
-
-x_dist_init = InitiatePop(y0, which_par_quant, state_geno_match, state_par_match,
-init_comm_mat, params, cv_vect)
-x_dist = x_dist_init
-
-WhoIsNext(x_dist, no_species, no_columns, no_params, y0, state_par_match, state_geno_match)
-# return params_next, genotype_next, whosnext
-([3.9561700291768664 1.0 0.0011999999999999995 0.0010000000000000002], [NaN NaN NaN NaN], [10.0])
-
-=#

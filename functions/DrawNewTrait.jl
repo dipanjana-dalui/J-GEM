@@ -33,33 +33,10 @@ function DrawNewTraits(x_dist::Matrix{Float64}, parent_traits::Vector{Float64},
 		end
 	end
 	
+	## JPD: edit this please
 	offspring_genotypes = collect(transpose(parent_traits[no_param+1:no_columns-1]))
 	##### what happens to genotype?
 
 	return offspring_traits, offspring_genotypes
 end
 
-
-##############################################
-#					SCRATCH			         #
-##############################################
-#=
-
-R0 = 10
-y0 = R0 = 10
-state_par_match = SMatrix{1, 4}(1, 1, 1, 1) ## make static array?
-state_geno_match = SMatrix{1, 4}(0, 0, 0, 0)
-geno_par_match = SMatrix{1, 4}(0, 0, 0, 0)
-which_param_quant = state_geno_match - geno_par_match
-no_species = size(state_par_match, 1)
-no_params = size(state_par_match, 2)
-no_columns = no_params + 1 + size(state_geno_match, 2)
-
-x_dist
-col = 1 ## confusing - is this the index or the value??
-# col right now is 1 and acts as the species id
-parent_traits = x_dist[Int(whosnext[1]), 2:no_columns]
-no_columns
-no_params
-
-=#

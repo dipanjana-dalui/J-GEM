@@ -22,6 +22,7 @@ outputting an array corresponding to multiple states,
 then be extra careful while using the output downstream.
 
 =#
+
 # need: b_max, b_s, N, d_min, d_s
 
 function Birth(b_max,b_s, R)
@@ -32,6 +33,11 @@ function Death(d_min, d_s, R)
     d_new = (d_min + d_s*R[1])*R[1]
 end
 
+## in the next function, we will need to match the
+## parameters indices to the name. The easiest way to 
+## do that is look at the state_par_match matric
+# state_par_match = Array{Int64}([1 1 1 1])
+# no_col = params, no_row = state
 function event_terms(params_next::Matrix{Float64}, N::Vector{Int64})
     b_max = params_next[1,1] # max birth
     d_min = params_next[1,2] # min death

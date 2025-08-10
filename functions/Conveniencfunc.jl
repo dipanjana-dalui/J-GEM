@@ -11,5 +11,3 @@ function deci_threshold(df::DataFrame)
 	df_mod = mapcols(col -> round.(col, digits=6), df)
 	return df_mod
 end
-
-## functions for data conversions

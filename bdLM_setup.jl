@@ -55,14 +55,15 @@ b_s = rand(LogNormal(log(b_s_mu), b_s_sigma), 1) # density dependence of birth
 d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1) # density dependence of death
 
 param_init = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
-# par_names = ("b_max", "d_min", "b_s", "d_s")
+# might be good practice to write down the order of of the parameters 
+par_names = ("b_max", "d_min", "b_s", "d_s")
 
 # calculate initial constant 
 r_max = b_max-d_min
 K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
 
-no_state = length(N0) ## also, no_state = size(state_par_match, 1) 
-no_params = length(param_init)  ## also, size(state_par_match, 2)
+no_state = length(N0) 
+no_params = length(param_init)  
 
 include("bdLM_bdTerms.jl")
 
@@ -72,24 +73,13 @@ include("bdLM_bdTerms.jl")
 # Major decision time: here you will decide on how many GEM vers you want to run
 # in total. You can also choose to run the GEM vers separately.
 
-# For example, I will create a GEM ver array of Integer 1, 2, 3: these are our
-# 3 vers of GEMS.
+# For example, I will create a GEM ver array of for two versions: 1 and 2
 
 GEM_ver = Vector{String}(["ver1","ver2"])
 num_rep = 10
 t_max = 15.0 # we will keep it low for checking purpose
 min_time_step_to_store = 0.1
 
-#= fix later: decide on the proper dimensions of h2 and cv
-so you can streamline it to scale to #state and #param 
-cv_vect = SMatrix{no_params,no_state}(0.2, 0, 0, 0)
-size(cv_vect)
-h2_vect = SMatrix{2,no_state}(0, 0.25) 
-size(h2_vect)
-or, 
-h2_vect = [0.2 0 0 0] # row corresponds to state, 
-                      #col corresponds to trait heri
-=#
 
 h2_vect = [0.0;
             0.2]
@@ -99,10 +89,7 @@ h2_mat = reshape(h2_vect, length(GEM_ver), no_state)
 cv_vect = [0.0;
             0.2]
 cv_mat = reshape(cv_vect, length(GEM_ver), no_state)
-#cv_vect = collect(transpose([0.2 0 0 0 0 0 0;
-#                             0 0 0 0 0 0 0])) #### THIS IS WRONG???
-                             ## row = state
-                             ## col = GEM version
+
 #=
 ******************************************************
 **          SANITY CHECK: DETERMINISTIC ODE         **
@@ -139,33 +126,29 @@ plot(sol, linewidth=3,
 #=***************************************************
 **               PAR & GENOTYPE MATCH              **
 ***************************************************=#
-state_par_match = Array{Int64}([1 1 1 1]) #no_col = params, no_row = state
-state_geno_match = Array{Int64}([0 0 0 0])
-geno_par_match = Array{Int64}([0 0 0 0])
+#no_col = params, no_row = state
 
-# might be good practice to write down the order of of the parameters 
-# par_names = ("b_max", "d_min", "b_s", "d_s")
-# geno_names = ("g_b_max", "g_d_min", "g_b_s", "g_d_s")
-which_par_quant = state_par_match - geno_par_match
-no_columns = no_params + 1 + size(state_geno_match, 2) 
+state_par_match = Array{Int64}([1 1 1 1]) # matching parameters to state
+state_geno_match = Array{Int64}([0 0 0 0]) # matching genotype to state
+geno_par_match = Array{Int64}([0 0 0 0]) # connection b/w parameter and genotype
 
-par_names = ["b_max", "d_min", "b_s", "d_s"]
+# good place to give names to genotypes
 geno_names = ["g_1", "g_2", "g_3", "g_4"]
+
+# do not change the next two lines
+which_par_quant = state_par_match - geno_par_match 
 
 ######################################################
 ##     STORAGE CONTAINERS FOR SIMULATION OUTPUT     ##
 ######################################################
-stand_time = range(0, t_max, step = min_time_step_to_store);
-stand_time = collect(stand_time);
-num_time_steps = length(stand_time);
+no_columns = no_params + 1 + size(state_geno_match, 2) 
+stand_time = range(0, t_max, step = min_time_step_to_store)
+stand_time = collect(stand_time)
+num_time_steps = length(stand_time)
 
-#pop_stand_out = fill(NaN, no_state, num_time_steps, num_rep)
-#x_stand_out = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep) #trait
-#x_var_stand_out = fill(NaN, no_columns-1,num_time_steps, no_state, num_rep) # trait variance 
-
-pop_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver));
-trait_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver));
-trait_var_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver));
+pop_out_all = fill(NaN, no_state, num_time_steps, num_rep, length(GEM_ver))
+trait_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
+trait_var_out_all = fill(NaN, no_columns-1,num_time_steps, no_state,num_rep, length(GEM_ver))
 
 #=***************************************************
 **           CALL GEM SIMULATION FUNCTION          **
