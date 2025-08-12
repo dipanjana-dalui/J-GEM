@@ -20,7 +20,7 @@ Julia v1.1x
 VSCode (optional, recommended)
 
 ## Documentation
-An quick reference user guide can be found [here](). 
+An quick reference user guide can be found [here](https://docs.google.com/document/d/1ei0qyVbipbbEpGSSgWxtgIu7WO41jif7Dmy_n1E6_lM/edit?tab=t.0). 
 
 
 ## Citation
