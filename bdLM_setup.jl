@@ -2,14 +2,16 @@
 This is your set up file.
 Anything that is preceeded by #=*** X X ***=# is for user to change
 Anything that is preceeded by #### need not be changed
-
 =#
-
+  
+####################################################
+####         Dependencies and functions         ####
+####################################################
 include("functions/Packages.jl")
 include("functions/AuxiliaryFunc.jl")
 
 #=*** set seed ***=#
-Random.seed!(42)  # use only when debugging 
+Random.seed!(42)  
 
 #=***************************************************
 **         DEFINE MODEL & BIRTH-DEATH FUNC         **
@@ -56,16 +58,23 @@ d_s = rand(LogNormal(log(d_s_mu), d_s_sigma), 1) # density dependence of death
 
 param_init = [vec(b_max)[1], vec(d_min)[1], vec(b_s)[1], vec(d_s)[1]]
 # might be good practice to write down the order of of the parameters 
-par_names = ("b_max", "d_min", "b_s", "d_s")
+par_names = ["b_max", "d_min", "b_s", "d_s"]
 
 # calculate initial constant 
 r_max = b_max-d_min
 K = floor(vec((b_max - d_min)/(b_s + d_s))[1])
+#==********************************************
+At this point you have defined everything that you will need
+to set up your birth-death functions.
+go to: bdTerms.jl
+********************************************==#
 
+#######################################
 no_state = length(N0) 
 no_params = length(param_init)  
 
 include("bdLM_bdTerms.jl")
+#######################################
 
 #=***************************************************
 **                  DESIGN CHOICES                 **
@@ -76,8 +85,8 @@ include("bdLM_bdTerms.jl")
 # For example, I will create a GEM ver array of for two versions: 1 and 2
 
 GEM_ver = Vector{String}(["ver1","ver2"])
-num_rep = 10
-t_max = 15.0 # we will keep it low for checking purpose
+num_rep = 5
+t_max = 10.0 # we will keep it low for checking purpose
 min_time_step_to_store = 0.1
 
 
@@ -186,7 +195,7 @@ trait_mean_df = GEM_run[2]
 trait_var_df = GEM_run[3]
 #CSV.write(trait_var_df)
 
-p1 = Pop_Plot(pop_time_series_df, 1)
-savefig(p1, "bdLM_pop_plot.pdf")
+Pop_Plot(pop_time_series_df, 1)
 
 Trait_Plot(trait_mean_df, trait_var_df, 1, "b_max")
+

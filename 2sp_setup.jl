@@ -12,7 +12,7 @@ include("functions/Packages.jl")
 include("functions/AuxiliaryFunc.jl")
 
 #=*** set seed ***=#
-Random.seed!(42)  # use only when debugging 
+Random.seed!(42)  # optional
 
 #=***************************************************
 **         DEFINE MODEL & BIRTH-DEATH FUNC         **
@@ -29,18 +29,6 @@ alpha := 1/K = self regulation
 sp := space clearace rate/attack rate 
 f := conversion efficiency  
 m1 := mortality
-
-birth terms H1: 
-birth_H_1 = b_i*H_1
-
-death terms H1:
-death_H_1 =  + 
-
-birth term for P1:
-birth_P = sp*f*H1*P1
-
-death term for P1:
-death_P = m1*P1
 
 =#
 
